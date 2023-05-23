@@ -21,41 +21,6 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let counter:Uint256 = _msg.init_count;
-    COUNTER_VALUE.save(deps.storage, &counter)?; 
-    let owner_addr1 = deps.api.addr_validate(&"0x5A8D648DEE57b2fc90D98DC17fa887159b69638b".to_string())?;
-    let owner_addr2 = deps.api.addr_validate(&"0x8651e94972a56e69F3C0897d9E8faCbDAEb98386".to_string())?;
-    let owner_addr3 = deps.api.addr_validate(&"0x9536354AE32852A7E7C4BFe7415b104016d5Fb04".to_string())?;
-    let owner_addr4 = deps.api.addr_validate(&"0xB26C63498bBa95589704F3d5A1fE2DF763C8B7a4".to_string())?;
-
-    BALANCES.update(
-        deps.storage,
-        &owner_addr1,
-        |balance: Option<Uint128>| -> StdResult<_> {
-            Ok(balance.unwrap_or_default().checked_sub(Uint128::zero())?)
-        },
-    )?;
-    BALANCES.update(
-        deps.storage,
-        &owner_addr2,
-        |balance: Option<Uint128>| -> StdResult<_> {
-            Ok(balance.unwrap_or_default().checked_sub(Uint128::zero())?)
-        },
-    )?;
-    BALANCES.update(
-        deps.storage,
-        &owner_addr3,
-        |balance: Option<Uint128>| -> StdResult<_> {
-            Ok(balance.unwrap_or_default().checked_sub(Uint128::zero())?)
-        },
-    )?;BALANCES.update(
-        deps.storage,
-        &owner_addr4,
-        |balance: Option<Uint128>| -> StdResult<_> {
-            Ok(balance.unwrap_or_default().checked_sub(Uint128::zero())?)
-        },
-    )?;
-
     Ok(Response::new())
 }
 
@@ -66,60 +31,23 @@ pub fn execute(
     _info: MessageInfo,
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
+
+    // deps.api.ed25519_verify(message, signature, public_key);
+
     match msg {
-        ExecuteMsg::Add { delta } => try_add(deps,delta),
-        ExecuteMsg::Subtract {} => try_sub(deps),
+        ExecuteMsg::Test { } => try_test(deps),
     }
 }
 
-pub fn try_add(deps: DepsMut,delta:Uint256) -> Result<Response, ContractError> {
+pub fn try_test(deps: DepsMut) -> Result<Response, ContractError> {
+    let hash: Result<Vec<u8>, hex::FromHexError> = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
+    let signature = hex::decode("b9299dab50b3cddcaecd64b29bfbd5cd30fac1a1adea1b359a13c4e5171492a6573059c66d894684488f92e7ce1f91b158ca57b0235485625b576a3b98c480ac").to_owned();
+    let pubkey = hex::decode("041d4c015b00cbd914e280b871d3c6ae2a047ca650d3ecea4b5246bb3036d4d74960b7feb09068164d2b82f1c7df9e95839b29ae38e90d60578b2318a54e108cf8").to_owned();
 
-    let mut counter: Uint256 = COUNTER_VALUE
-    .may_load(deps.storage)?.unwrap();
-    counter = delta;
-    COUNTER_VALUE.save(deps.storage, &counter)?;
+    let result = deps.api.secp256k1_verify(&hash.to_owned().unwrap(), &signature.to_owned().unwrap(), &pubkey.to_owned().unwrap());
 
-    // let owner_addr1 = deps.api.addr_validate(&"0x5A8D648DEE57b2fc90D98DC17fa887159b69638b".to_string())?;
-    // let owner_addr2 = deps.api.addr_validate(&"0x8651e94972a56e69F3C0897d9E8faCbDAEb98386".to_string())?;
-    // let owner_addr3 = deps.api.addr_validate(&"0x9536354AE32852A7E7C4BFe7415b104016d5Fb04".to_string())?;
-    // let owner_addr4 = deps.api.addr_validate(&"0xB26C63498bBa95589704F3d5A1fE2DF763C8B7a4".to_string())?;
 
-    // let data: Vec<(Addr, Uint128)> = BALANCES
-    //         .range(deps.storage, None, None, Descending)
-    //         .collect::<StdResult<Vec<_>>>()?;
-    // let mut i = 1;
-    // for (owner, allowance) in &data {
-    //     if i == 3{
-    //         BALANCES2.save(deps.storage, &owner, &allowance)?;
-    //     }
-
-    //     i = i + 1;
-    // }
-
-    // let data: Vec<(Addr, Uint128)> = BALANCES
-    //         .range(deps.storage, Some(Bound::exclusive(&owner_addr1)), Some(Bound::exclusive(&owner_addr4)), Descending)
-    //         .collect::<StdResult<Vec<_>>>()?;
-    // let mut i = 1;
-    // for (owner, allowance) in &data {
-        // if i == 1{
-        //     BALANCES2.save(deps.storage, &owner, &allowance)?;
-        // }
-
-    //     i = i + 1;
-    // }
-
-    Ok(Response::new().add_attribute("Added", counter).add_attribute("Changed", counter))
-}
-
-pub fn try_sub(deps: DepsMut) -> Result<Response, ContractError> {
-    let mut counter = COUNTER_VALUE
-    .may_load(deps.storage)?.unwrap();
-    if counter == Uint256::zero(){
-        ContractError::TooLow {};
-    }
-    counter -= Uint256::from(1u128);
-    COUNTER_VALUE.save(deps.storage, &counter)?;
-    Ok(Response::new().add_attribute("Changed", counter))
+    Ok(Response::new().add_attribute("Result", result.unwrap().to_string()))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -133,71 +61,4 @@ fn query_count(deps: Deps) -> StdResult<Uint256> {
     let info = COUNTER_VALUE.may_load(deps.storage).unwrap_or_default();
     Ok(info.unwrap())
 
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use cosmwasm_std::testing::{mock_dependencies_with_balance, mock_env, mock_info};
-    use cosmwasm_std::{coins, from_binary};
-
-    #[test]
-    fn proper_initialization() {
-        let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
-
-        let msg = InstantiateMsg {init_count: Uint256::from_u128(0) };
-        let info = mock_info("creator", &coins(1000, "earth"));
-
-        // we can just call .unwrap() to assert this was a success
-        let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-        assert_eq!(0, res.messages.len());
-
-        // it worked, let's query the state
-        let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCounter {}).unwrap();
-        let value: Uint256 = from_binary(&res).unwrap();
-        assert_eq!(Uint256::zero(), value);
-    }
-
-    #[test]
-    fn add() {
-        let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
-
-        let msg = InstantiateMsg {init_count: Uint256::from_u128(0)};
-        let info = mock_info("creator", &coins(2, "token"));
-        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-        // beneficiary can release it
-        let info = mock_info("anyone", &coins(2, "token"));
-        let msg = ExecuteMsg::Add {delta:Uint256::from(1u128)};
-        let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-        // should increase counter by 1
-        let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCounter {}).unwrap();
-        let value: Uint256 = from_binary(&res).unwrap();
-        assert_eq!(Uint256::from(1u128), value);
-    }
-
-    #[test]
-    fn reset() {
-        let mut deps = mock_dependencies_with_balance(&coins(2, "token"));
-
-        let msg = InstantiateMsg { init_count: Uint256::from_u128(0)};
-        let info = mock_info("creator", &coins(2, "token"));
-        let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-
-
-        let info = mock_info("anyone", &coins(2, "token"));
-        let _addmsg = ExecuteMsg::Add {delta:Uint256::from(5u128)};
-        execute(deps.as_mut(), mock_env(), info, _addmsg).unwrap();
-    
-        // only the original creator can reset the counter
-        let auth_info = mock_info("creator", &coins(2, "token"));
-        let msg = ExecuteMsg::Subtract { };
-        let _res = execute(deps.as_mut(), mock_env(), auth_info, msg).unwrap();
-
-        // should now be 4
-        let res = query(deps.as_ref(), mock_env(), QueryMsg::GetCounter {}).unwrap();
-        let value: Uint256 = from_binary(&res).unwrap();
-        assert_eq!(Uint256::from(4u128), value);
-    }
 }

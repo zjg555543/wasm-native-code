@@ -24,5 +24,6 @@
             ],
             "url": "/schema/migrate_msg.json"
         }
-    ]
+    ],
+    "cosmywasmy.chainConfigName": "OKTC localnet"
 }

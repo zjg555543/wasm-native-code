@@ -9,7 +9,15 @@
       ],
       "properties": {
         "test": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "vm"
+          ],
+          "properties": {
+            "vm": {
+              "type": "boolean"
+            }
+          }
         }
       },
       "additionalProperties": false

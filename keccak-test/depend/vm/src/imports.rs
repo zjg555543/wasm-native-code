@@ -246,7 +246,7 @@ pub fn do_keccak256_digest<A: BackendApi, S: Storage, Q: Querier>(
     let data = read_region(&env.memory(), data_ptr, KECCAK256_DIGEST_LEN)?;
 
     let result = keccak256_digest(&data);
-    let gas_info = GasInfo::with_cost(env.gas_config.secp256k1_verify_cost); // todo gas
+    let gas_info = GasInfo::with_cost(1); // todo gas
     process_gas_info::<A, S, Q>(env, gas_info)?;
     
     match result {

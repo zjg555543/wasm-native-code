@@ -12,15 +12,20 @@
           "type": "object",
           "required": [
             "count",
-            "vm"
+            "data",
+            "mode"
           ],
           "properties": {
             "count": {
               "type": "integer",
               "format": "int32"
             },
-            "vm": {
-              "type": "boolean"
+            "data": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         }

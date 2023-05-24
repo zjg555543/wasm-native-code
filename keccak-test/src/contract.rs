@@ -25,21 +25,25 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Test { vm,count } => test(deps, vm, count),
+        ExecuteMsg::Test { mode,count, data } => test(deps, mode, count, data),
     }
 }
 
-pub fn test(deps: DepsMut, vm: bool, count :i32) -> Result<Response, ContractError> {
-    if vm {
-        return try_test_vm(deps, count);
-    }else{
-        return try_test_contract(deps, count);
+pub fn test(deps: DepsMut, mode: i32, count :i32, data: String) -> Result<Response, ContractError> {
+    if mode == 0{
+        return try_test_nil(deps, count, data);
     }
+    
+    if mode == 1{
+        return try_test_contract(deps, count, data);
+    } 
+    
+    return try_test_vm(deps, count, data);
 }
 
-pub fn try_test_vm(deps: DepsMut, count :i32) -> Result<Response, ContractError> {
+pub fn try_test_vm(deps: DepsMut, count :i32, inputdata: String) -> Result<Response, ContractError> {
 
-    let data  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
+    let data  = hex::decode(inputdata).to_owned();
     let mut number = 0;
     let mut temp: String = "".to_string();
     while number != count {
@@ -49,21 +53,11 @@ pub fn try_test_vm(deps: DepsMut, count :i32) -> Result<Response, ContractError>
             temp = hex::encode(result.unwrap());
         }
     }
-    Ok(Response::new().add_attribute("try_test_vm", temp))
+    Ok(Response::new().add_attribute("try_test_vm", temp).add_attribute("number", number.to_string()))
 }
 
-pub fn try_verify(deps: DepsMut) -> Result<Response, ContractError> {
-    let hash  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
-    let signature = hex::decode("b9299dab50b3cddcaecd64b29bfbd5cd30fac1a1adea1b359a13c4e5171492a6573059c66d894684488f92e7ce1f91b158ca57b0235485625b576a3b98c480ac").to_owned();
-    let pubkey= hex::decode("041d4c015b00cbd914e280b871d3c6ae2a047ca650d3ecea4b5246bb3036d4d74960b7feb09068164d2b82f1c7df9e95839b29ae38e90d60578b2318a54e108cf8").to_owned();
-
-    let result = deps.api.secp256k1_verify(&hash.to_owned().unwrap(), &signature.to_owned().unwrap(), &pubkey.to_owned().unwrap());
-
-    Ok(Response::new().add_attribute("try_verify", result.unwrap().to_string()))
-}
-
-pub fn try_test_contract(deps: DepsMut, count :i32) -> Result<Response, ContractError> {
-    let data  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
+pub fn try_test_contract(deps: DepsMut, count :i32, inputdata: String) -> Result<Response, ContractError> {
+    let data  = hex::decode(inputdata).to_owned();
 
     let mut number = 0;
     let mut temp: String = "".to_string();
@@ -75,7 +69,28 @@ pub fn try_test_contract(deps: DepsMut, count :i32) -> Result<Response, Contract
         }
     }
 
-    Ok(Response::new().add_attribute("try_test_contract", temp))
+    Ok(Response::new().add_attribute("try_test_contract", temp).add_attribute("number", number.to_string()))
+}
+
+pub fn try_test_nil(deps: DepsMut, count :i32, inputdata: String) -> Result<Response, ContractError> {
+    let data  = hex::decode(inputdata).to_owned();
+    let temp = hex::encode(data.unwrap());
+    let mut number = 0;
+    while number != count {
+        number += 1;
+    }
+
+    Ok(Response::new().add_attribute("try_test_nil", temp).add_attribute("number", number.to_string()))
+}
+
+pub fn try_verify(deps: DepsMut) -> Result<Response, ContractError> {
+    let hash  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
+    let signature = hex::decode("b9299dab50b3cddcaecd64b29bfbd5cd30fac1a1adea1b359a13c4e5171492a6573059c66d894684488f92e7ce1f91b158ca57b0235485625b576a3b98c480ac").to_owned();
+    let pubkey= hex::decode("041d4c015b00cbd914e280b871d3c6ae2a047ca650d3ecea4b5246bb3036d4d74960b7feb09068164d2b82f1c7df9e95839b29ae38e90d60578b2318a54e108cf8").to_owned();
+
+    let result = deps.api.secp256k1_verify(&hash.to_owned().unwrap(), &signature.to_owned().unwrap(), &pubkey.to_owned().unwrap());
+
+    Ok(Response::new().add_attribute("try_verify", result.unwrap().to_string()))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

@@ -70,8 +70,10 @@ pub fn secp256k1_verify(
 pub fn keccak256_digest(
     data: &[u8],
 ) -> Result<Vec<u8>, CryptoError>  {
-    let sign_bytes  = hex::decode("hello").to_owned();
-    let hash = Keccak256::digest(&sign_bytes.to_owned().unwrap());
+    // let sign_bytes  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
+    // let hash = Keccak256::digest(&sign_bytes.to_owned().unwrap());
+
+    let hash = Keccak256::digest(data);
     Ok((&hash).to_vec())
 }
 

@@ -25,26 +25,30 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Test { vm } => test(deps, vm),
+        ExecuteMsg::Test { vm,count } => test(deps, vm, count),
     }
 }
 
-pub fn test(deps: DepsMut, vm: bool) -> Result<Response, ContractError> {
+pub fn test(deps: DepsMut, vm: bool, count :i32) -> Result<Response, ContractError> {
     if vm {
-        return try_test_vm(deps);
+        return try_test_vm(deps, count);
     }else{
-        return try_test_contract(deps);
+        return try_test_contract(deps, count);
     }
 }
 
-pub fn try_test_vm(deps: DepsMut) -> Result<Response, ContractError> {
+pub fn try_test_vm(deps: DepsMut, count :i32) -> Result<Response, ContractError> {
 
     let data  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
-
-    let result = deps.api.keccak256_digest(&data.to_owned().unwrap());
-
-    let temp: String = hex::encode(result.unwrap());
-
+    let mut number = 0;
+    let mut temp: String = "".to_string();
+    while number != count {
+        number += 1;
+        let result = deps.api.keccak256_digest(&data.to_owned().unwrap());
+        if number == 1 {
+            temp = hex::encode(result.unwrap());
+        }
+    }
     Ok(Response::new().add_attribute("try_test_vm", temp))
 }
 
@@ -58,12 +62,20 @@ pub fn try_verify(deps: DepsMut) -> Result<Response, ContractError> {
     Ok(Response::new().add_attribute("try_verify", result.unwrap().to_string()))
 }
 
-pub fn try_test_contract(deps: DepsMut) -> Result<Response, ContractError> {
+pub fn try_test_contract(deps: DepsMut, count :i32) -> Result<Response, ContractError> {
     let data  = hex::decode("1ff5c235b3c317d054b80b4bf0a8038bd727d180872d2491a7edef4f949c4135").to_owned();
-    let hash = Keccak256::digest(&data.unwrap());
-    let result: String = hex::encode(hash);
 
-    Ok(Response::new().add_attribute("try_test_contract", result))
+    let mut number = 0;
+    let mut temp: String = "".to_string();
+    while number != count {
+        number += 1;
+        let hash = Keccak256::digest(&data.to_owned().unwrap());
+        if number == 1 {
+            temp = hex::encode(hash);
+        }
+    }
+
+    Ok(Response::new().add_attribute("try_test_contract", temp))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

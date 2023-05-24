@@ -4,9 +4,7 @@
 
 
 
-## Contract introduce
 
-This is a counter wasm contract for Cosmy Wasmy .
 
 
 

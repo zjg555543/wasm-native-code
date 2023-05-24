@@ -1,5 +1,5 @@
 [package]
-name = "wasm-counter"
+name = "keccak-test"
 version = "0.1.0"
 authors = ["OKC <okc@okg.com>"]
 edition = "2018"

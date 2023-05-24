@@ -11,9 +11,14 @@
         "test": {
           "type": "object",
           "required": [
+            "count",
             "vm"
           ],
           "properties": {
+            "count": {
+              "type": "integer",
+              "format": "int32"
+            },
             "vm": {
               "type": "boolean"
             }

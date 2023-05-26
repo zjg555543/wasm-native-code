@@ -37,8 +37,12 @@ pub fn test(deps: DepsMut, mode: i32, count :i32, data: String) -> Result<Respon
     if mode == 1{
         return try_test_contract(deps, count, data);
     } 
+
+    if mode == 2{
+        return try_test_vm(deps, count, data);
+    }
     
-    return try_test_vm(deps, count, data);
+    return try_test_go(deps, count, data);
 }
 
 pub fn try_test_vm(deps: DepsMut, count :i32, inputdata: String) -> Result<Response, ContractError> {
@@ -81,6 +85,22 @@ pub fn try_test_nil(deps: DepsMut, count :i32, inputdata: String) -> Result<Resp
     }
 
     Ok(Response::new().add_attribute("try_test_nil", temp).add_attribute("number", number.to_string()))
+}
+
+pub fn try_test_go(deps: DepsMut, count :i32, inputdata: String) -> Result<Response, ContractError> {
+    // let data  = hex::decode(inputdata).to_owned();
+
+    let mut number = 0;
+    let mut temp: String = "".to_string();
+    while number != count {
+        number += 1;
+        let result = deps.api.addr_canonicalize(&inputdata);
+        if number == 1 {
+            temp = result.unwrap().to_string();
+        }
+    }
+
+    Ok(Response::new().add_attribute("try_test_go", temp).add_attribute("number", number.to_string()))
 }
 
 pub fn try_verify(deps: DepsMut) -> Result<Response, ContractError> {
